@@ -12,6 +12,8 @@ import os
 # from subprocess import call
 # from datetime import datetime
 #
+#
+
 BROADCAST_URL = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts' # broadcast URL
 showlist = [] # initialise showlist variable. Saves properties of each show for download
 ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
