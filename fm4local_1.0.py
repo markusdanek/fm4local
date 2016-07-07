@@ -5,7 +5,7 @@
 import requests
 import urllib.request
 from time import sleep
-from sys import getsizeof
+import sys
 import os
 # import sys
 # from pprint import pprint
@@ -19,28 +19,31 @@ showlist = [] # initialise showlist variable. Saves properties of each show for 
 ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
 nday=4 # number of most recent days you want to download.
 
-rday=7-nday # umber of days to delete from list
+rday=7-nday # number of days to delete from list
 
-print('[ Fetching available shows ]')
-days = requests.get(BROADCAST_URL).json() # getting list of available days and shows
 
-for d in days[rday:]: # loop over days
-    for show in d['broadcasts']:# loop over shows
-        url = '{0}/{1}/{2}'.format(BROADCAST_URL, d['day'], show['programKey']) # building download link for stream URLs
-        showStreams = requests.get(url).json() # download streamURLs and other info for the show
+def get_showlist(BROADCAST_URL, rday):
 
-        if len(showStreams['streams']) > 0: # checking if list contains at least one stream
-            streamList = [] # initialising list of available streams
-            for stream in showStreams['streams']: # loop over all streams for the show
-                streamList.append(stream['loopStreamId']) # saving all stream URLs of the show
+    print('[ Fetching available shows ]')
+    days = requests.get(BROADCAST_URL).json() # getting list of available days and shows
 
-            showURL = streamList # renaming streamList
+    for d in days[rday:]: # loop over days
+        for show in d['broadcasts']:# loop over shows
+            url = '{0}/{1}/{2}'.format(BROADCAST_URL, d['day'], show['programKey']) # building download link for stream URLs
+            showStreams = requests.get(url).json() # download streamURLs and other info for the show
 
-        else:
-            showURL = [] # if no stream is available, showURL is an empty list
+            if len(showStreams['streams']) > 0: # checking if list contains at least one stream
+                streamList = [] # initialising list of available streams
+                for stream in showStreams['streams']: # loop over all streams for the show
+                    streamList.append(stream['loopStreamId']) # saving all stream URLs of the show
 
-        showlist.append({'startISO':show['startISO'], 'title':show['title'], 'programKey':show['programKey'],
-                         'day':d['day'], 'showURL':showURL}) # saving all show info as dictionary in a list of shows
+                showURL = streamList # renaming streamList
+
+            else:
+                showURL = [] # if no stream is available, showURL is an empty list
+
+            showlist.append({'startISO':show['startISO'], 'title':show['title'], 'programKey':show['programKey'],
+                             'day':d['day'], 'showURL':showURL}) # saving all show info as dictionary in a list of shows
 
 
 for show in showlist: # loop over each show to download all its parts
@@ -85,13 +88,3 @@ for show in showlist: # loop over each show to download all its parts
                 print('******Exhausted all 10 retries. Continuing to next show...******')
 
 print('Sync complete')
-
-
-
-
-            # file.close() # not necesary when using with...as statements
-
-            # r = requests.get(downURL, stream=True)
-            # with open(filename, 'wb') as fd:
-            #     for chunk in r.iter_content(chunk_size=1024):
-            #         fd.write(chunk)
