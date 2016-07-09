@@ -16,7 +16,9 @@ import os
 BROADCAST_URL = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts' # broadcast URL
 ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
 nday=4 # number of most recent days you want to download.
+
 filedir = "fm4local"
+os.makedirs(filedir, exist_ok=True) # create the directory, if it doesnt already exist
 
 rday=7-nday # number of days to delete from list
 
@@ -51,10 +53,10 @@ def get_showlist():
 
     return showlist
 
-del
 
-def download_streams():
+def download_streams(showlist,showlist_local):
     for show in showlist: # loop over each show to download all its parts
+
         if len(show['showURL']) == 0: # check if the list of streams is empty.
             print('****** {0} not available  ******'.format(show['title']))
             continue # if no stream available, continue to next show
@@ -71,31 +73,32 @@ def download_streams():
                 # build filename to save the file Title-PartNumber-TotalParts-Day-ProgramKey.mp3
                 filename = '{3}-{0}-{1}of{2}-{4}.mp3'.format(show['title'], show['showURL'].index(url) + 1,
                                                             len(show['showURL']), str(show['day'])[4:], show['programKey'])
-
                 filepath = os.path.join(filedir, filename) # build OS independent filepath
 
-                os.makedirs(filedir, exist_ok=True)
-
-                for attempt in range(9): # try to download the file 10 times, if it still failed, go to next show
-                    try:
-                        response = urllib.request.urlopen(downURL) # request the file
-                        data = response.read() # read the file
-                        with open(filepath, "wb") as file: # open the local file for saving
-                            file.write(data) # write the data to disk
-                        print('download and save successful!')
-                        break # download and save successful, go to next part of the show
-                    except ConnectionResetError: # try again in case of connection reset error
-                        print('ConnectionResetError occurred. Waiting 10 seconds...')
-                        sleep(10)
-                        print('Attempt {0}: Trying again.'.format(attempt))
-                    except OSError: # try again in case of OSError
-                        print('OSError occurred. ')
-                        print('Attempt {0} failed: Waiting 10 seconds...'.format(attempt+1))
-                        sleep(10)
-                        if attempt<9:
-                            print('Trying again...')
-                else: # Failed 10 times to download the file successfully, go to next file
-                    print('******Exhausted all 10 retries. Continuing to next show...******')
+                # if condition to skip download if file already exists
+                if filename in showlist_local:
+                    print("file already in local storage, skipping download")
+                else:
+                    for attempt in range(9): # try to download the file 10 times, if it still failed, go to next show
+                        try:
+                            response = urllib.request.urlopen(downURL) # request the file
+                            data = response.read() # read the file
+                            with open(filepath, "wb") as file: # open the local file for saving
+                                file.write(data) # write the data to disk
+                            print('download and save successful!')
+                            break # download and save successful, go to next part of the show
+                        except ConnectionResetError: # try again in case of connection reset error
+                            print('ConnectionResetError occurred. Waiting 10 seconds...')
+                            sleep(10)
+                            print('Attempt {0}: Trying again.'.format(attempt))
+                        except OSError: # try again in case of OSError
+                            print('OSError occurred. ')
+                            print('Attempt {0} failed: Waiting 10 seconds...'.format(attempt+1))
+                            sleep(10)
+                            if attempt<9:
+                                print('Trying again...')
+                    else: # Failed 10 times to download the file successfully, go to next file
+                        print('******Exhausted all 10 retries. Continuing to next show...******')
     return
 
 def main():
@@ -103,7 +106,7 @@ def main():
     showlist_local = get_showlist_local()
     print(showlist_local)
     print(showlist)
-    # download_streams()
+    download_streams(showlist,showlist_local)
     print('Sync complete')
 
     return
