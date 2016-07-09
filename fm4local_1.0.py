@@ -11,21 +11,24 @@ import os
 # from pprint import pprint
 # from subprocess import call
 # from datetime import datetime
-#
-# test comment
+
 
 BROADCAST_URL = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts' # broadcast URL
-showlist = [] # initialise showlist variable. Saves properties of each show for download
 ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
 nday=4 # number of most recent days you want to download.
 filedir = "fm4local"
 
 rday=7-nday # number of days to delete from list
 
+def get_showlist_local(): # get list of locally available files in download directory
+    showlist_local=os.listdir(filedir)
+    return showlist_local
+
 
 def get_showlist():
 
     print('[ Fetching available shows ]')
+    showlist=[]
     days = requests.get(BROADCAST_URL).json() # getting list of available days and shows
 
     for d in days[rday:]: # loop over days
@@ -47,6 +50,8 @@ def get_showlist():
                              'day':d['day'], 'showURL':showURL}) # saving all show info as dictionary in a list of shows
 
     return showlist
+
+del
 
 def download_streams():
     for show in showlist: # loop over each show to download all its parts
@@ -94,8 +99,11 @@ def download_streams():
     return
 
 def main():
-    get_showlist()
-    download_streams()
+    showlist = get_showlist()
+    showlist_local = get_showlist_local()
+    print(showlist_local)
+    print(showlist)
+    # download_streams()
     print('Sync complete')
 
     return
