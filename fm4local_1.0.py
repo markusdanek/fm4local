@@ -22,9 +22,16 @@ os.makedirs(filedir, exist_ok=True) # create the directory, if it doesnt already
 
 rday=7-nday # number of days to delete from list
 
-def get_showlist_local(): # get list of locally available files in download directory
+def get_filenames_local(): # get list of locally available files in download directory
     showlist_local=os.listdir(filedir)
     return showlist_local
+
+
+def remove_old(showlist, filenames_local): #function for remove old files
+
+    for file in filenames_local:
+# how to search list of dicts???????????????????????
+
 
 
 def get_showlist():
@@ -54,7 +61,7 @@ def get_showlist():
     return showlist
 
 
-def download_streams(showlist,showlist_local):
+def download_streams(showlist,filenames_local):
     for show in showlist: # loop over each show to download all its parts
 
         if len(show['showURL']) == 0: # check if the list of streams is empty.
@@ -76,7 +83,7 @@ def download_streams(showlist,showlist_local):
                 filepath = os.path.join(filedir, filename) # build OS independent filepath
 
                 # if condition to skip download if file already exists
-                if filename in showlist_local:
+                if filename in filenames_local:
                     print("file already in local storage, skipping download")
                 else:
                     for attempt in range(9): # try to download the file 10 times, if it still failed, go to next show
@@ -103,10 +110,9 @@ def download_streams(showlist,showlist_local):
 
 def main():
     showlist = get_showlist()
-    showlist_local = get_showlist_local()
-    print(showlist_local)
-    print(showlist)
-    download_streams(showlist,showlist_local)
+    filenames_local = get_filenames_local()
+    remove_old(showlist, filenames_local)
+    # download_streams(showlist,showlist_local)
     print('Sync complete')
 
     return
