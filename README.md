@@ -12,4 +12,4 @@ Python 3.5 script to download all fm47tage shows to a local folder
 * implement logfile system
 
 ## To-Do immediate
-* fix restructuring as functions
+

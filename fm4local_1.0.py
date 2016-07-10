@@ -28,10 +28,12 @@ def get_filenames_local(): # get list of locally available files in download dir
 
 
 def remove_old(showlist, filenames_local): #function for remove old files
-
-    for file in filenames_local:
-# how to search list of dicts???????????????????????
-
+    show_id=[str(show['day'])[4:]+'-'+show['title'] for show in showlist]
+    show_id_local=[file[] for file in filenames]
+    print(filenames_local)
+    # for file in filenames_local:
+    # how to search list of dicts???????????????????????
+    return
 
 
 def get_showlist():
