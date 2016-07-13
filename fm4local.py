@@ -5,7 +5,6 @@
 import requests
 import urllib.request
 from time import sleep
-import sys
 import os
 # import sys
 # from pprint import pprint
@@ -13,14 +12,23 @@ import os
 # from datetime import datetime
 
 
-BROADCAST_URL = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts' # broadcast URL
-ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
-nday=1 # number of most recent days you want to download.
+# Ignore list for shows you dont want to download
+ignore =[
+    "4SL", # Sleepless
+    "4UL", # Unlimited
+    "4HOP",# Homebase Parade
+    "4TV", # Tribe Vibes
+    "4LB", # La Boum Deluxe
+    "4SS", # Swound Sound
+    "4DKM" # Digital Konfusion
+    ]
+
+nday=7 # number of most recent days you want to download.
 
 filedir = "fm4local"
-os.makedirs(filedir, exist_ok=True) # create the directory, if it doesnt already exist
 
-rday=7-nday # number of days to delete from list
+
+
 
 def get_filenames_local(): # get list of locally available files in download directory
     showlist_local=os.listdir(filedir)
@@ -42,12 +50,16 @@ def remove_old(showlist, filenames_local): #function for remove old files
 def get_showlist():
 
     print('[ Fetching available shows ]')
+
     showlist=[]
-    days = requests.get(BROADCAST_URL).json() # getting list of available days and shows
+    broadcast_url = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts'  # broadcast URL
+    rday = 7 - nday  # number of days to delete from list
+
+    days = requests.get(broadcast_url).json() # getting list of available days and shows
 
     for d in days[rday:]: # loop over days
         for show in d['broadcasts']:# loop over shows
-            url = '{0}/{1}/{2}'.format(BROADCAST_URL, d['day'], show['programKey']) # building download link for stream URLs
+            url = '{0}/{1}/{2}'.format(broadcast_url, d['day'], show['programKey']) # building download link for stream URLs
             showStreams = requests.get(url).json() # download streamURLs and other info for the show
 
             if len(showStreams['streams']) > 0: # checking if list contains at least one stream
@@ -91,10 +103,11 @@ def download_streams(showlist,filenames_local):
                 else:
                     for attempt in range(9): # try to download the file 10 times, if it still failed, go to next show
                         try:
-                            print('[ downloading {3}-{0} - part {1} of {2}... ]'.format(show['title'],
-                                                                                        show['showURL'].index(url) + 1,
-                                                                                        len(show['showURL']),
-                                                                                        str(show['day'])[4:]))
+                            print('[ downloading {3}-{0}-{1}of{2}-{4}... ]'.format(show['title'],
+                                                                                   show['showURL'].index(url) + 1,
+                                                                                   len(show['showURL']),
+                                                                                   str(show['day'])[4:]),
+                                                                                   show['programKey'])
                             response = urllib.request.urlopen(downURL) # request the file
                             data = response.read() # read the file
                             with open(filepath, "wb") as file: # open the local file for saving
@@ -117,6 +130,7 @@ def download_streams(showlist,filenames_local):
 
 def main():
     showlist = get_showlist()
+    os.makedirs(filedir, exist_ok=True)  # create the file directory, if it doesnt already exist
     filenames_local = get_filenames_local()
     remove_old(showlist, filenames_local)
     download_streams(showlist,filenames_local)
