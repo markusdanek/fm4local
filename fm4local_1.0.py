@@ -15,7 +15,7 @@ import os
 
 BROADCAST_URL = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts' # broadcast URL
 ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
-nday=4 # number of most recent days you want to download.
+nday=1 # number of most recent days you want to download.
 
 filedir = "fm4local"
 os.makedirs(filedir, exist_ok=True) # create the directory, if it doesnt already exist
@@ -28,11 +28,14 @@ def get_filenames_local(): # get list of locally available files in download dir
 
 
 def remove_old(showlist, filenames_local): #function for remove old files
-    show_id=[str(show['day'])[4:]+'-'+show['title'] for show in showlist]
-    show_id_local=[file[] for file in filenames]
-    print(filenames_local)
-    # for file in filenames_local:
-    # how to search list of dicts???????????????????????
+    show_id_remote=[str(show['day'])[4:]+'-'+show['title'] for show in showlist] # create comparison strings for remote
+    for file in filenames_local:
+        groups=file.split("-") # split local filename at "-"
+        show_id_local='-'.join(groups[:2]) # create comparison string for local
+        if not any([show_id_local in s for s in show_id_remote]): # compare strings and delete if local is not in remote
+            print("deleting obsolete file {0}".format(file))
+            os.remove(os.path.join(filedir, file))
+    # to search substring in list of dict: any(["Fran" in s for li in l for s in li.values()])
     return
 
 
@@ -74,8 +77,6 @@ def download_streams(showlist,filenames_local):
             continue # if show is in the the list, continue to next show
         else:
             for url in show['showURL']: # loop over all parts of the show to download them
-                print('[ downloading {0} - part {1} of {2}... ]'.format(show['title'], show['showURL'].index(url) + 1,
-                                                                        len(show['showURL'])))
 
                 downURL = 'http://loopstream01.apa.at/?channel=fm4&id={0}&offset=0'.format(url) # build complete stream URL
 
@@ -86,10 +87,14 @@ def download_streams(showlist,filenames_local):
 
                 # if condition to skip download if file already exists
                 if filename in filenames_local:
-                    print("file already in local storage, skipping download")
+                    print("{0} already in local storage, skipping download".format(filename))
                 else:
                     for attempt in range(9): # try to download the file 10 times, if it still failed, go to next show
                         try:
+                            print('[ downloading {3}-{0} - part {1} of {2}... ]'.format(show['title'],
+                                                                                        show['showURL'].index(url) + 1,
+                                                                                        len(show['showURL']),
+                                                                                        str(show['day'])[4:]))
                             response = urllib.request.urlopen(downURL) # request the file
                             data = response.read() # read the file
                             with open(filepath, "wb") as file: # open the local file for saving
@@ -114,7 +119,7 @@ def main():
     showlist = get_showlist()
     filenames_local = get_filenames_local()
     remove_old(showlist, filenames_local)
-    # download_streams(showlist,showlist_local)
+    download_streams(showlist,filenames_local)
     print('Sync complete')
 
     return
