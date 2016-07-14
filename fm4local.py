@@ -106,8 +106,8 @@ def download_streams(showlist,filenames_local):
                             print('[ downloading {3}-{0}-{1}of{2}-{4}... ]'.format(show['title'],
                                                                                    show['showURL'].index(url) + 1,
                                                                                    len(show['showURL']),
-                                                                                   str(show['day'])[4:]),
-                                                                                   show['programKey'])
+                                                                                   str(show['day'])[4:],
+                                                                                   show['programKey']))
                             response = urllib.request.urlopen(downURL) # request the file
                             data = response.read() # read the file
                             with open(filepath, "wb") as file: # open the local file for saving
