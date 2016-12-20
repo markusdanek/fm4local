@@ -14,8 +14,8 @@ import os
 
 
 BROADCAST_URL = 'http://audioapi.orf.at/fm4/json/2.0/broadcasts' # broadcast URL
-ignore =["4SL","4UL","4HOP","4TV","4LB","4SS","4DKM"] # Ignore list for shows you dont want to download
-nday=1 # number of most recent days you want to download.
+ignore = ["4HE", "4RC", "4UL", "4CO", "4HB", "4AL", "4HS", "4CZ", "4SL", "4MO", "4UP", "4HOP", "4BT", "4TV", "4PX", "4TOP", "4CH", "4CC", "4SS", "4KDM", "4GP", "4ZS", "4IS", "4GL", "4LR", "4SP", "4PH"]
+nday=7 # number of most recent days you want to download.
 
 filedir = "fm4local"
 os.makedirs(filedir, exist_ok=True) # create the directory, if it doesnt already exist
@@ -125,4 +125,3 @@ def main():
     return
 
 main()
-
